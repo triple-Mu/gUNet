@@ -4,7 +4,7 @@ import numpy as np
 import cv2
 
 from torch.utils.data import Dataset
-from utils import hwc_to_chw, read_img
+from utils import hwc_to_chw, read_img, read_img_resize
 
 
 def augment(imgs=[], size=256, edge_decay=0., data_augment=True):
@@ -80,8 +80,12 @@ class PairLoader(Dataset):
 
 		# read images
 		if img_name not in self.source_files:
-			source_img = read_img(os.path.join(self.root_dir, 'IN', img_name), to_float=False)
-			target_img = read_img(os.path.join(self.root_dir, 'GT', img_name), to_float=False)
+			# source_img = read_img(os.path.join(self.root_dir, 'IN', img_name), to_float=False)
+			# target_img = read_img(os.path.join(self.root_dir, 'GT', img_name), to_float=False)
+			source_img = read_img_resize(os.path.join(self.root_dir, 'IN', img_name), to_float=False,
+										 size=(self.size, self.size))
+			target_img = read_img_resize(os.path.join(self.root_dir, 'GT', img_name), to_float=False,
+										 size=(self.size, self.size))
 
 			# cache in memory if specific (uint8 to save memory), need num_workers=0
 			if self.cache_memory:

@@ -38,6 +38,7 @@ if args.use_ddp:
     if local_rank == 0: print('==> Using DDP.')
 else:
     world_size = 1
+    local_rank = 0
 
 # training config
 with open(os.path.join('configs', args.exp, 'base.json'), 'r') as f:
@@ -128,21 +129,17 @@ def main():
     # define network, and use DDP for faster training
     network = eval(args.model)()
     network.cuda()
-    try:
-        from thop import profile
-        params = sum(x.numel() * x.element_size() for x in network.parameters())
-        tmp = torch.randn(1, 3, 512, 512).cuda()
-        flops = profile(network, inputs=(tmp,), verbose=False)[0]
-        print('*' * 35)
-        print('==> FLOPs: {:.2f}G, Params: {:.2f}M'.format(flops / 1e9, params / (1 << 20)))
-        print('*' * 35)
-    except Exception:
-        pass
-
-    else:
-        torch.onnx.export(
-            network, tmp, 'tmp.onnx', opset_version=13
-        )
+    if args.use_ddp or local_rank == 0:
+        try:
+            from thop import profile
+            params = sum(x.numel() * x.element_size() for x in network.parameters())
+            tmp = torch.randn(1, 3, 512, 512).cuda()
+            flops = profile(network, inputs=(tmp,), verbose=False)[0]
+            print('*' * 35)
+            print('==> FLOPs: {:.2f}G, Params: {:.2f}M'.format(flops / 1e9, params / (1 << 20)))
+            print('*' * 35)
+        except Exception:
+            pass
 
     if args.use_ddp:
         network = DistributedDataParallel(network, device_ids=[local_rank], output_device=local_rank)

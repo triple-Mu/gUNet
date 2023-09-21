@@ -52,6 +52,14 @@ def read_img(filename, to_float=True):
 	return img[:, :, ::-1]
 
 
+def read_img_resize(filename, to_float=True, size=(1024, 1024)):
+	img = cv2.imread(filename)
+	if img.shape[0] != size[0] or img.shape[1] != size[1]:
+		img = cv2.resize(img, size)
+	if to_float: img = img.astype('float32') / 255.0
+	return img[:, :, ::-1]
+
+
 def write_img(filename, img, to_uint=True):
 	if to_uint: img = np.round(img * 255.0).astype('uint8')
 	cv2.imwrite(filename, img[:, :, ::-1])

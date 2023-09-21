@@ -18,7 +18,7 @@ import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model', default='gunet_s2', type=str, help='model name')
-parser.add_argument('--num_workers', default=0, type=int, help='number of workers')
+parser.add_argument('--num_workers', default=8, type=int, help='number of workers')
 parser.add_argument('--use_mp', action='store_true', default=False, help='use Mixed Precision')
 parser.add_argument('--use_ddp', action='store_true', default=False, help='use Distributed Data Parallel')
 parser.add_argument('--save_dir', default='./saved_models/', type=str, help='path to models saving')
@@ -44,8 +44,8 @@ with open(os.path.join('configs', args.exp, 'base.json'), 'r') as f:
     b_setup = json.load(f)
 
 variant = args.model.split('_')[-1]
-config_name = 'model_' + variant + '.json' if variant in ['n', 't', 'tt', 's', 'b',
-                                                          'd'] else 'default.json'  # default.json as baselines' configuration file
+# default.json as baselines' configuration file
+config_name = 'model_' + variant + '.json' if variant in ['n', 't', 'tt', 's', 's2', 'b', 'd'] else 'default.json'
 with open(os.path.join('configs', args.exp, config_name), 'r') as f:
     m_setup = json.load(f)
 

@@ -62,3 +62,6 @@ class CosineScheduler(Scheduler):
 
     def get_epoch_values(self, epoch: int):
         return self._get_value(epoch)
+
+    def _get_lr(self, t: int) -> float:
+        return 0

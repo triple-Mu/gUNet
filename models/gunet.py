@@ -204,7 +204,7 @@ class gUNet(nn.Module):
 		return x
 
 
-__all__ = ['gUNet', 'gunet_n', 'gunet_t', 'gunet_s', 'gunet_b', 'gunet_d']
+__all__ = ['gUNet', 'gunet_n', 'gunet_t', 'gunet_s','gunet_s2', 'gunet_b', 'gunet_d']
 
 # Normalization batch size of 16~32 may be good
 
@@ -222,3 +222,6 @@ def gunet_d():	# 4 cards 3090
 
 def gunet_n():	# 4 cards 2080Ti
 	return gUNet(kernel_size=5, base_dim=16, depths=[2, 2, 2, 4, 2, 2, 2], conv_layer=ConvLayer, norm_layer=nn.BatchNorm2d, gate_act=nn.Sigmoid, fusion_layer=SKFusion)
+
+def gunet_s2():	# 4 cards 3090
+	return gUNet(kernel_size=5, base_dim=24, depths=[4, 4, 4, 6, 4, 4, 4], conv_layer=ConvLayer, norm_layer=nn.BatchNorm2d, gate_act=nn.Sigmoid, fusion_layer=SKFusion)

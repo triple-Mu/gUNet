@@ -17,7 +17,7 @@ from models import *
 import numpy as np
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--model', default='gunet_n', type=str, help='model name')
+parser.add_argument('--model', default='gunet_s2', type=str, help='model name')
 parser.add_argument('--num_workers', default=0, type=int, help='number of workers')
 parser.add_argument('--use_mp', action='store_true', default=False, help='use Mixed Precision')
 parser.add_argument('--use_ddp', action='store_true', default=False, help='use Distributed Data Parallel')
@@ -44,7 +44,7 @@ with open(os.path.join('configs', args.exp, 'base.json'), 'r') as f:
     b_setup = json.load(f)
 
 variant = args.model.split('_')[-1]
-config_name = 'model_' + variant + '.json' if variant in ['n', 't', 's', 'b',
+config_name = 'model_' + variant + '.json' if variant in ['n', 't', 'tt', 's', 'b',
                                                           'd'] else 'default.json'  # default.json as baselines' configuration file
 with open(os.path.join('configs', args.exp, config_name), 'r') as f:
     m_setup = json.load(f)
@@ -131,13 +131,18 @@ def main():
     try:
         from thop import profile
         params = sum(x.numel() * x.element_size() for x in network.parameters())
-        tmp = torch.randn(1, 3, 1024, 1024).cuda()
+        tmp = torch.randn(1, 3, 512, 512).cuda()
         flops = profile(network, inputs=(tmp,), verbose=False)[0]
         print('*' * 35)
         print('==> FLOPs: {:.2f}G, Params: {:.2f}M'.format(flops / 1e9, params / (1 << 20)))
         print('*' * 35)
     except Exception:
         pass
+
+    else:
+        torch.onnx.export(
+            network, tmp, 'tmp.onnx', opset_version=13
+        )
 
     if args.use_ddp:
         network = DistributedDataParallel(network, device_ids=[local_rank], output_device=local_rank)
